@@ -10,11 +10,43 @@ from pathlib import Path
 # ==========================================
 st.set_page_config(page_title="Gerador de FAI", layout="wide")
 
-# Inicialização das variáveis de sessão para controle de acesso e pop-ups
+# Inicialização das variáveis de sessão
 if 'admin_auth' not in st.session_state:
     st.session_state.admin_auth = False
 if 'show_exit_dialog' not in st.session_state:
     st.session_state.show_exit_dialog = False
+if 'erro_login' not in st.session_state:
+    st.session_state.erro_login = False
+
+# --- FUNÇÕES DE CALLBACK (Executam antes da tela renderizar) ---
+def tentar_login():
+    senha = st.session_state.input_senha
+    try:
+        senha_correta = st.secrets["senha_admin"]
+    except:
+        senha_correta = "fab2026"
+        
+    if senha == senha_correta:
+        st.session_state.admin_auth = True
+        st.session_state.curso_selector = None  # Limpa o seletor de forma segura
+        st.session_state.erro_login = False
+    else:
+        st.session_state.erro_login = True
+
+def limpar_memoria_admin():
+    for k in list(st.session_state.keys()):
+        if k.startswith(('sigla_pasta', 'nome_cabecalho', 'titulo', 'subtitulo', 'instrucoes', 'enunciado_', 'pud_', 'texto_', 'pontos_', 'num_itens_q', 'num_questoes')):
+            del st.session_state[k]
+
+def confirmar_saida():
+    st.session_state.admin_auth = False
+    st.session_state.show_exit_dialog = False
+    limpar_memoria_admin()
+
+def cancelar_saida():
+    st.session_state.show_exit_dialog = False
+    st.session_state.curso_selector = None # Reverte a seleção de forma segura
+
 
 CURSOS_DIR = Path("cursos")
 if not CURSOS_DIR.exists():
@@ -39,24 +71,15 @@ curso_selecionado = st.sidebar.selectbox(
 
 st.sidebar.divider()
 
-# Se NÃO estiver logado como administrador
+# Acesso do Coordenador
 if not st.session_state.admin_auth:
     with st.sidebar.expander("🔒 Acesso do Coordenador"):
-        senha = st.text_input("Senha de Acesso", type="password")
-        if st.button("Entrar no Painel", use_container_width=True):
-            try:
-                senha_correta = st.secrets["senha_admin"]
-            except:
-                senha_correta = "fab2026"
-                
-            if senha == senha_correta:
-                st.session_state.admin_auth = True
-                st.session_state.curso_selector = None # Limpa qualquer curso que estivesse selecionado
-                st.rerun()
-            else:
-                st.error("Senha incorreta!")
+        st.text_input("Senha de Acesso", type="password", key="input_senha")
+        st.button("Entrar no Painel", use_container_width=True, on_click=tentar_login)
+        
+        if st.session_state.erro_login:
+            st.error("Senha incorreta!")
 else:
-    # Se ESTIVER logado como administrador
     st.sidebar.success("✅ Logado como Coordenador")
     
     # 1. Se clicar no botão de Sair explicitamente
@@ -68,14 +91,8 @@ else:
         st.session_state.show_exit_dialog = True
 
 # ==========================================
-# FUNÇÕES DE APOIO, PDF E MODAIS
+# MODAIS E PDF
 # ==========================================
-def limpar_memoria_admin():
-    """Limpa os dados do formulário do Coordenador para não vazar pra próxima sessão"""
-    for k in list(st.session_state.keys()):
-        if k.startswith(('sigla_pasta', 'nome_cabecalho', 'titulo', 'subtitulo', 'instrucoes', 'enunciado_', 'pud_', 'texto_', 'pontos_', 'num_itens_q', 'num_questoes')):
-            del st.session_state[k]
-
 @st.dialog("⚠️ Confirmação de Saída")
 def modal_sair_painel():
     st.warning("Quaisquer alterações não salvas no Construtor Visual serão perdidas.")
@@ -83,23 +100,13 @@ def modal_sair_painel():
     
     col1, col2 = st.columns(2)
     with col1:
-        if st.button("✅ Sim, Sair", use_container_width=True, type="primary"):
-            st.session_state.admin_auth = False
-            st.session_state.show_exit_dialog = False
-            limpar_memoria_admin()
-            st.rerun()
+        st.button("✅ Sim, Sair", use_container_width=True, type="primary", on_click=confirmar_saida)
     with col2:
-        if st.button("❌ Não, Continuar editando", use_container_width=True):
-            st.session_state.show_exit_dialog = False
-            # Reverte a seleção da barra lateral para manter o usuário no painel
-            st.session_state.curso_selector = None 
-            st.rerun()
+        st.button("❌ Não, Continuar editando", use_container_width=True, on_click=cancelar_saida)
 
-# Dispara o Modal de saída se necessário
 if st.session_state.show_exit_dialog:
     modal_sair_painel()
 
-# Classe do PDF
 class PDF(FPDF):
     def set_config(self, config_data):
         self.config_data = config_data
@@ -302,7 +309,6 @@ if st.session_state.admin_auth:
         
     st.divider()
     
-    # CHECAGEM DE SEGURANÇA IMEDIATA
     curso_existe = sigla and sigla.upper() in [d.upper() for d in cursos_disponiveis]
     pode_salvar = True
     
@@ -343,7 +349,6 @@ if st.session_state.admin_auth:
                 except Exception as e:
                     st.error(f"Erro ao publicar: Verifique o Token do Github e a conexão. Detalhes: {e}")
                     
-    # Interrompe a execução do script para que a FAI de visualização não renderize embaixo do painel Admin
     st.stop()
 
 
@@ -351,7 +356,6 @@ if st.session_state.admin_auth:
 # INTERFACE PADRÃO (PREENCHIMENTO DA FAI)
 # ==========================================
 
-# Se nenhum curso foi selecionado, exibe a tela de boas vindas
 if not st.session_state.curso_selector:
     st.title("FAI ONLINE DIGITAL - CURSOS TOP")
     st.info("👈 Selecione ao lado o curso desejado para iniciar o preenchimento da Ficha de Avaliação Individual.")
