@@ -6,19 +6,19 @@ from fpdf import FPDF
 from pathlib import Path
 
 # ==========================================
-# CONFIGURAÇÃO INICIAL E ESTADOS
+# 1. ESTADOS DA SESSÃO (MEMÓRIA DO SISTEMA)
 # ==========================================
 st.set_page_config(page_title="Gerador de FAI", layout="wide")
 
-# Inicialização das variáveis de sessão
-if 'admin_auth' not in st.session_state:
-    st.session_state.admin_auth = False
-if 'show_exit_dialog' not in st.session_state:
-    st.session_state.show_exit_dialog = False
-if 'erro_login' not in st.session_state:
-    st.session_state.erro_login = False
+if 'admin_auth' not in st.session_state: st.session_state.admin_auth = False
+if 'show_exit_dialog' not in st.session_state: st.session_state.show_exit_dialog = False
+if 'curso_ativo' not in st.session_state: st.session_state.curso_ativo = None
+if 'curso_alvo_pendente' not in st.session_state: st.session_state.curso_alvo_pendente = None
+if 'erro_login' not in st.session_state: st.session_state.erro_login = False
 
-# --- FUNÇÕES DE CALLBACK (Executam antes da tela renderizar) ---
+# ==========================================
+# 2. FUNÇÕES DE CALLBACK (RODAM ANTES DA TELA)
+# ==========================================
 def tentar_login():
     senha = st.session_state.input_senha
     try:
@@ -28,70 +28,76 @@ def tentar_login():
         
     if senha == senha_correta:
         st.session_state.admin_auth = True
-        st.session_state.curso_selector = None  # Limpa o seletor de forma segura
+        st.session_state.curso_ativo = None
+        st.session_state.sidebar_selector = None
         st.session_state.erro_login = False
+        st.session_state.input_senha = "" # Limpa a caixinha de senha
     else:
         st.session_state.erro_login = True
 
+def handle_course_change():
+    """Gerencia a navegação entre cursos de forma segura"""
+    selecionado = st.session_state.sidebar_selector
+    if st.session_state.admin_auth and selecionado:
+        # Se está logado, bloqueia a navegação imediata e joga o Pop-Up de saída
+        st.session_state.curso_alvo_pendente = selecionado
+        st.session_state.show_exit_dialog = True
+        st.session_state.sidebar_selector = None # Limpa a caixa visualmente
+    elif not st.session_state.admin_auth:
+        # Se não está logado, navega livremente
+        st.session_state.curso_ativo = selecionado
+
+def acionar_saida_manual():
+    """Botão explícito de Sair do Painel"""
+    st.session_state.show_exit_dialog = True
+    st.session_state.curso_alvo_pendente = None
+
 def limpar_memoria_admin():
-    for k in list(st.session_state.keys()):
-        if k.startswith(('sigla_pasta', 'nome_cabecalho', 'titulo', 'subtitulo', 'instrucoes', 'enunciado_', 'pud_', 'texto_', 'pontos_', 'num_itens_q', 'num_questoes')):
-            del st.session_state[k]
+    """Limpa os rascunhos do coordenador garantindo logoff completo"""
+    chaves = [k for k in st.session_state.keys() if k.startswith(('sigla_pasta', 'nome_cabecalho', 'titulo', 'subtitulo', 'instrucoes', 'enunciado_', 'pud_', 'texto_', 'pontos_', 'num_itens_q', 'num_questoes'))]
+    for k in chaves:
+        del st.session_state[k]
 
-def confirmar_saida():
-    st.session_state.admin_auth = False
-    st.session_state.show_exit_dialog = False
-    limpar_memoria_admin()
-
-def cancelar_saida():
-    st.session_state.show_exit_dialog = False
-    st.session_state.curso_selector = None # Reverte a seleção de forma segura
-
-
+# ==========================================
+# 3. BARRA LATERAL E NAVEGAÇÃO
+# ==========================================
 CURSOS_DIR = Path("cursos")
-if not CURSOS_DIR.exists():
-    CURSOS_DIR.mkdir()
+if not CURSOS_DIR.exists(): CURSOS_DIR.mkdir()
 
-st.sidebar.image("https://upload.wikimedia.org/wikipedia/commons/thumb/1/13/Emblema_da_For%C3%A7a_A%C3%A9rea_Brasileira.svg/1200px-Emblema_da_For%C3%A7a_A%C3%A9rea_Brasileira.svg.png", width=100)
+try:
+    st.sidebar.image("logo_fab.png", width=100) # Evita o erro da Wikipedia caindo
+except:
+    pass
+
 st.sidebar.title("Navegação")
 
 cursos_disponiveis = [d.name for d in CURSOS_DIR.iterdir() if d.is_dir()]
 cursos_disponiveis.sort()
 
-# ==========================================
-# LÓGICA DA BARRA LATERAL (LOGIN / NAVEGAÇÃO)
-# ==========================================
-curso_selecionado = st.sidebar.selectbox(
+# Caixa de seleção acoplada ao Callback seguro
+st.sidebar.selectbox(
     "Selecione a FAI do Curso:", 
     cursos_disponiveis if cursos_disponiveis else ["Nenhum"],
     index=None,
     placeholder="Escolha um curso...",
-    key="curso_selector"
+    key="sidebar_selector",
+    on_change=handle_course_change
 )
 
 st.sidebar.divider()
 
-# Acesso do Coordenador
 if not st.session_state.admin_auth:
     with st.sidebar.expander("🔒 Acesso do Coordenador"):
         st.text_input("Senha de Acesso", type="password", key="input_senha")
         st.button("Entrar no Painel", use_container_width=True, on_click=tentar_login)
-        
         if st.session_state.erro_login:
             st.error("Senha incorreta!")
 else:
     st.sidebar.success("✅ Logado como Coordenador")
-    
-    # 1. Se clicar no botão de Sair explicitamente
-    if st.sidebar.button("🚪 Sair do Painel", use_container_width=True):
-        st.session_state.show_exit_dialog = True
-        
-    # 2. Se tentar selecionar um curso na barra enquanto edita
-    if st.session_state.curso_selector is not None:
-        st.session_state.show_exit_dialog = True
+    st.sidebar.button("🚪 Sair do Painel", use_container_width=True, on_click=acionar_saida_manual)
 
 # ==========================================
-# MODAIS E PDF
+# 4. MODAIS E LOGOFF 
 # ==========================================
 @st.dialog("⚠️ Confirmação de Saída")
 def modal_sair_painel():
@@ -100,13 +106,36 @@ def modal_sair_painel():
     
     col1, col2 = st.columns(2)
     with col1:
-        st.button("✅ Sim, Sair", use_container_width=True, type="primary", on_click=confirmar_saida)
+        # Se confirmar, executamos a limpeza completa e forçamos o st.rerun() dentro do modal
+        if st.button("✅ Sim, Sair", use_container_width=True, type="primary"):
+            st.session_state.admin_auth = False
+            st.session_state.show_exit_dialog = False
+            limpar_memoria_admin()
+            
+            # Se ele tentou sair clicando em um curso na barra, enviamos ele para a FAI
+            if st.session_state.curso_alvo_pendente:
+                st.session_state.curso_ativo = st.session_state.curso_alvo_pendente
+                st.session_state.sidebar_selector = st.session_state.curso_alvo_pendente
+                st.session_state.curso_alvo_pendente = None
+            else:
+                # Logoff comum
+                st.session_state.curso_ativo = None
+                st.session_state.sidebar_selector = None
+                
+            st.rerun() # Fecha o modal com segurança e recarrega a página
+            
     with col2:
-        st.button("❌ Não, Continuar editando", use_container_width=True, on_click=cancelar_saida)
+        if st.button("❌ Não, Continuar", use_container_width=True):
+            st.session_state.show_exit_dialog = False
+            st.session_state.curso_alvo_pendente = None
+            st.rerun()
 
 if st.session_state.show_exit_dialog:
     modal_sair_painel()
 
+# ==========================================
+# 5. CLASSES E FUNÇÕES DO PDF
+# ==========================================
 class PDF(FPDF):
     def set_config(self, config_data):
         self.config_data = config_data
@@ -217,9 +246,8 @@ def show_success_download(pdf_bytes, file_name, nota_final, is_vazia):
     with col_link:
         st.info("🔗 [Assinar digitalmente no gov.br](https://assinador.iti.br/)", icon="✍️")
 
-
 # ==========================================
-# PAINEL DO COORDENADOR (CONSTRUTOR E EDITOR)
+# 6. PAINEL DO COORDENADOR 
 # ==========================================
 if st.session_state.admin_auth:
     st.title("🛠️ Painel do Coordenador")
@@ -349,19 +377,18 @@ if st.session_state.admin_auth:
                 except Exception as e:
                     st.error(f"Erro ao publicar: Verifique o Token do Github e a conexão. Detalhes: {e}")
                     
-    st.stop()
+    st.stop() # Bloqueia renderização do resto da página se estiver no Admin
 
 
 # ==========================================
-# INTERFACE PADRÃO (PREENCHIMENTO DA FAI)
+# 7. INTERFACE DO INSTRUTOR (PREENCHIMENTO)
 # ==========================================
-
-if not st.session_state.curso_selector:
+if not st.session_state.curso_ativo:
     st.title("FAI ONLINE DIGITAL - CURSOS TOP")
     st.info("👈 Selecione ao lado o curso desejado para iniciar o preenchimento da Ficha de Avaliação Individual.")
     st.stop()
 
-config_path = CURSOS_DIR / st.session_state.curso_selector / "fai_config.json"
+config_path = CURSOS_DIR / st.session_state.curso_ativo / "fai_config.json"
 with open(config_path, 'r', encoding='utf-8') as f:
     config = json.load(f)
 
@@ -428,7 +455,7 @@ if config.get('questoes'):
                         nota_final += item_resp['pontos'] / 2.0
                         
             nome_arq_aluno = aluno.replace(' ', '_') if aluno else "PREENCHIDA"
-            file_name = f"{st.session_state.curso_selector}_FAI_{nome_arq_aluno}.pdf"
+            file_name = f"{st.session_state.curso_ativo}_FAI_{nome_arq_aluno}.pdf"
             
             pdf_bytes = gerar_arquivo_pdf(config, respostas, aluno, tutor, nota_final, is_vazia=False)
             
@@ -438,6 +465,6 @@ if config.get('questoes'):
                 show_success_download(pdf_bytes, file_name, nota_final, is_vazia=False)
                 
         else:
-            file_name = f"{st.session_state.curso_selector}_FAI_IMPRESSAO.pdf"
+            file_name = f"{st.session_state.curso_ativo}_FAI_IMPRESSAO.pdf"
             pdf_bytes = gerar_arquivo_pdf(config, respostas, aluno, tutor, nota_final, is_vazia=True)
             show_success_download(pdf_bytes, file_name, nota_final, is_vazia=True)
