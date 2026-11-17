@@ -13,3 +13,6 @@ __pycache__/
 
 # Opcional: ignorar o Dockerfile se não for mais usar na Oracle
 Dockerfile
+
+# Senha do github
+.streamlit/
