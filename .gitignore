@@ -1,0 +1,15 @@
+# Ambientes virtuais
+venv/
+env/
+.env
+
+# Arquivos temporários e cache do Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Arquivos gerados no teste local
+*.pdf
+
+# Opcional: ignorar o Dockerfile se não for mais usar na Oracle
+Dockerfile

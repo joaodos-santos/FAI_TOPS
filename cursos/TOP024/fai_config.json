@@ -1,0 +1,125 @@
+{
+  "cabecalho": {
+    "curso": "Curso TOP024 3/2026",
+    "titulo": "Ficha de Avaliação Individual",
+    "subtitulo": "GERENCIAMENTO E MANUTENÇÃO DAS BASE DE DADOS DO SAGITARIO NOS APP"
+  },
+  "instrucoes": "Esta ficha destina-se a avaliar o aluno nas atividades do Exercício Prático referentes ao curso de GERENCIAMENTO E MANUTENÇÃO DAS BASE DE DADOS DO SAGITARIO NOS APP, TOP024.\nA nota de cada questão é dada pela soma dos resultados parciais de cada item da questão, conforme especificado nesta ficha. A nota de avaliação se dará pela soma dos valores de cada questão, totalizando 10,0 pontos.\nObs.: A restituição desta ficha deverá ser feita ao coordenador do curso, após o preenchimento do quadro nota / Qt itens avaliados.\n\nEstrutura/Ambiente\nO ambiente deve possuir a aplicação SAGITARIO a partir da versão 2.10 em instalação virtualizada ou discreta, contendo minimamente as posições: PLJ, SBD, SPA01, SDV01, SUP, CTR01 e ASS01 conectadas em rede local e isoladas de outras redes (operacional/intraer). Deverá ser utilizada uma base de dados APPRF (BDSAULA) modificada para atender o cenário das questões.",
+  "questoes": [
+    {
+      "numero": "1",
+      "enunciado": "1) Importar a BDSAULA; Criar uma Nova Base de Dados com o nome BDSPROVA; Importar os dados da BDSAULA na BDSPROVA.",
+      "itens": [
+        {"texto": "criação da base de dados BDSPROVA", "pontos": 0.25},
+        {"texto": "importação da base de dados BDSAULA", "pontos": 0.25}
+      ],
+      "pud": "Item PUD: 1.2.1.b, 4.2.1.f."
+    },
+    {
+      "numero": "2",
+      "enunciado": "2) Criar a TWR SBJP (João Pessoa) na BDSPROVA: Criar a TWR; Endereço AFTN: SBJPZTZX; Endereço ICAO: SBJP; Considere que a torre possui TATIC instalado, está integrada ao Centralizador de Planos de Voo e não é aderente à emenda1.",
+      "itens": [
+        {"texto": "marcar integração com CPV", "pontos": 0.05},
+        {"texto": "preenchimento do protocolo correto (OLDI)", "pontos": 0.10},
+        {"texto": "marcação da opção Não aderente à emenda1", "pontos": 0.10}
+      ],
+      "pud": "Item PUD: 2.2.6.a.b."
+    },
+    {
+      "numero": "3",
+      "enunciado": "3) Identifique a entidade correta de cada dado abaixo, de acordo com padrão alfanumérico e cadastre na seção correspondente (Fixo ou VOR/DME) na BDSPROVA:\n\n- NOME: AKTOP | LATITUDE (S): 6 42 11 | LONGITUDE (W): 034 47 17\n- NOME: REC | LATITUDE (S): 08 08 19 | LONGITUDE (W): 034 56 04 | FREQ: 112 Mhz",
+      "itens": [
+        {"texto": "cadastrar o Fixo AKTOP com as coordenadas corretas", "pontos": 0.125},
+        {"texto": "cadastrar o VOR/DME REC com as coordenadas corretas", "pontos": 0.125}
+      ],
+      "pud": "Item PUD: 2.2.3.d, 2.2.4.b."
+    },
+    {
+      "numero": "4",
+      "enunciado": "4) Utilizando a opção 'Validar Cobertura' disponível na ferramenta GBDS em dados geográficos, efetue as alterações necessárias na BDSPROVA até que não seja exibida mensagem de erro de cobertura.",
+      "itens": [
+        {"texto": "corrigir o ponto do setor ALN fora da TMA", "pontos": 0.50}
+      ],
+      "pud": "Item PUD: 4.1.2.c."
+    },
+    {
+      "numero": "5",
+      "enunciado": "5) Efetue cálculo automático da declinação magnética em todas as quadrículas do mosaico. Caso necessário, utilizar o arquivo WMM.COF localizado na área de trabalho da PLJ.",
+      "itens": [
+        {"texto": "substituir o arquivo WMM.COF", "pontos": 0.25},
+        {"texto": "calcular a declinação magnética para todas as quadrículas", "pontos": 0.25}
+      ],
+      "pud": "Item PUD: 3.2.1.j."
+    },
+    {
+      "numero": "6",
+      "enunciado": "6) Na BDSPROVA, ajustar o tempo de rotação do radar 'RECIF' para 6 (seis) segundos. Ajuste as temporizações correspondentes conforme a nova parametrização.",
+      "itens": [
+        {"texto": "ajustar a rotação do radar RECIF com o valor de 6 (seis) segundos", "pontos": 0.25},
+        {"texto": "ajustar o tempo de espera da mensagem norte do radar RECIF com o valor de 18 (dezoito) segundos", "pontos": 0.25}
+      ],
+      "pud": "Item PUD: 3.1.3.b.c."
+    },
+    {
+      "numero": "7",
+      "enunciado": "7) Após o cadastro dos radares na BDSPROVA, um dos radares não foi corretamente cadastrado no SDV. Realize o cadastro completo corretamente.",
+      "itens": [
+        {"texto": "cadastrar o canal operacional do radar LPNT na lista de equipamentos do SDV01", "pontos": 0.25},
+        {"texto": "cadastrar o canal reserva do radar LPNT na lista de equipamentos do SDV01", "pontos": 0.25}
+      ],
+      "pud": "Item PUD: 3.1.1.b.c."
+    },
+    {
+      "numero": "8",
+      "enunciado": "8) Cadastrar a linha TOP024 na BDSPROVA com os seguintes pontos:\n- S07 13 30 W035 24 08 Nome: pto01\n- S08 07 21 W035 40 27 Nome: pto02\n- S08 38 04 W035 50 38 Nome: pto03\nConfigurações da linha: Traçado: TRAÇO CURTO LARGO, Cor: ROSA. Habilitar a visualização da linha APENAS no SM7 e do nome APENAS no SM8",
+      "itens": [
+        {"texto": "cadastro correto do ponto 01", "pontos": 0.125},
+        {"texto": "cadastro correto do ponto 02", "pontos": 0.125},
+        {"texto": "cadastro correto do ponto 03", "pontos": 0.125},
+        {"texto": "cadastro correto da linha com os 3 pontos fornecidos", "pontos": 0.25},
+        {"texto": "configurar tipo e cor da linha", "pontos": 0.125},
+        {"texto": "habilitar as visualizações nos SM corretos", "pontos": 0.25}
+      ],
+      "pud": "Item PUD: 3.3.1.a.b.e."
+    },
+    {
+      "numero": "9",
+      "enunciado": "9) Criar um vídeo mapa VMPROVA na BDSPROVA; Habilitar cada setor da TMA em somente um submapa, distintos entre si; e Atribuir uma cor diferente para cada setor, diferentes da cor padrão.",
+      "itens": [
+        {"texto": "criar um vídeo mapa nomeado VMPROVA", "pontos": 0.125},
+        {"texto": "habilitar o setor 01 em um submapa", "pontos": 0.125},
+        {"texto": "habilitar o setor 02 em um submapa", "pontos": 0.125},
+        {"texto": "habilitar o setor 03 em um submapa", "pontos": 0.125},
+        {"texto": "habilitar o setor 04 em um submapa", "pontos": 0.125},
+        {"texto": "habilitar o setor 05 em um submapa", "pontos": 0.125},
+        {"texto": "modificar a cor do setor 01", "pontos": 0.125},
+        {"texto": "modificar a cor do setor 02", "pontos": 0.125},
+        {"texto": "modificar a cor do setor 03", "pontos": 0.125},
+        {"texto": "modificar a cor do setor 04", "pontos": 0.125},
+        {"texto": "modificar a cor do setor 05", "pontos": 0.125},
+        {"texto": "as cores dos setores são distintas entre si", "pontos": 0.125}
+      ],
+      "pud": "Item PUD: 3.3.2.a.b.c.d.e."
+    },
+    {
+      "numero": "10",
+      "enunciado": "10) Libere a BDSPROVA. Efetue todas as correções necessárias, levando em consideração as melhores práticas ensinadas em sala de aula e no material do curso.",
+      "itens": [
+        {"texto": "Correção do ponto do setor ALN sobreposto ao F18", "pontos": 1.0},
+        {"texto": "Inserção do código do setor F36", "pontos": 0.25},
+        {"texto": "Alocar todos os setores à qualquer console", "pontos": 0.50},
+        {"texto": "Cadastrar zona do sistema para CTR01", "pontos": 0.25},
+        {"texto": "Aumentar o mosaico para sobrepor o waypoint", "pontos": 1.00}
+      ],
+      "pud": "Item PUD: 2.2.1.c, 4.1.2.c, 3.2.1.c, 3.1.2.c, 2.2.3.e."
+    },
+    {
+      "numero": "11",
+      "enunciado": "11) Difunda a BDSPROVA para as posições SUP, SDV01, SPA01, CTR01 e ASS01 da CADEIA 1 apenas. Ative o sistema selecionando a BDSPROVA e nenhum RPL. Todas as posições ligadas devem ser ativadas.",
+      "itens": [
+        {"texto": "Correção do nome da posição no cadastro da BDS", "pontos": 1.5}
+      ],
+      "pud": "Item PUD: 3.1.2.c, 4.2.2.c."
+    }
+  ]
+}
