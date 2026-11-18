@@ -219,11 +219,15 @@
         },
         {
           "texto": "Aumentar o mosaico para sobrepor o waypoint",
-          "pontos": 1.0
+          "pontos": 0.75
         },
         {
           "texto": "Corrigir problema de importação das linhas",
           "pontos": 0.5
+        },
+        {
+          "texto": "Recalcular declinação magnética após aumentar o mosaico",
+          "pontos": 0.25
         }
       ],
       "pud": "Item PUD: 2.2.1.c, 4.1.2.c, 3.2.1.c, 3.1.2.c, 2.2.3.e."
